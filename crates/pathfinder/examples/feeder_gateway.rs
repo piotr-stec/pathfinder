@@ -8,12 +8,12 @@
 /// a sync source:
 ///
 /// ```text
-/// cargo run --release -p pathfinder -- \
-///     --network custom --chain-id SN_SEPOLIA \
-///     --ethereum.url https://eth-sepolia.alchemyapi.io/v2/YOUR_API_KEY
-///     --gateway-url http://localhost:8080/gateway \
-///     --feeder-gateway-url http://localhost:8080/feeder_gateway \
-///     --data-directory /tmp
+// / cargo run --release -p pathfinder -- \
+// /     --network custom --chain-id SN_SEPOLIA \
+// /     --ethereum.url https://eth-sepolia.alchemyapi.io/v2/YOUR_API_KEY
+// /     --gateway-url http://localhost:8080/gateway \
+// /     --feeder-gateway-url http://localhost:8080/feeder_gateway \
+// /     --data-directory /tmp
 /// ```
 ///
 /// Optionally this tool can simulate reorgs. To have the tool return data so

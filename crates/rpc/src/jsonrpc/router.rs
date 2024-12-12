@@ -1,12 +1,15 @@
 use std::collections::HashMap;
 use std::num::NonZeroUsize;
 
-use axum::extract::{State, WebSocketUpgrade};
+use axum::extract::{Query, State, WebSocketUpgrade};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use futures::{Future, FutureExt, StreamExt};
 use http::HeaderValue;
 use method::RpcMethodEndpoint;
+use pathfinder_common::{BlockHash, BlockNumber};
+use pathfinder_storage::BlockId;
+use serde::Deserialize;
 #[cfg(test)]
 pub use subscription::CATCH_UP_BATCH_SIZE;
 pub use subscription::{handle_json_rpc_socket, CatchUp, RpcSubscriptionFlow, SubscriptionMessage};

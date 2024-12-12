@@ -16,6 +16,8 @@ pub mod v06;
 pub mod v07;
 pub mod v08;
 
+pub mod feeder_gateway_utils;
+
 use std::net::SocketAddr;
 use std::result::Result;
 use std::sync::atomic::{AtomicU32, Ordering};
@@ -26,6 +28,9 @@ use axum::extract::DefaultBodyLimit;
 use axum::response::IntoResponse;
 use context::RpcContext;
 pub use executor::compose_executor_transaction;
+use feeder_gateway_utils::{
+    get_block_handler, get_class_by_hash_handler, get_contract_addresses_handler, get_public_key_handler, get_signature_handler, get_state_update_handler
+};
 use http_body::Body;
 pub use jsonrpc::{Notifications, Reorg};
 use pathfinder_common::AllowedOrigins;
@@ -178,6 +183,16 @@ impl RpcServer {
             }
         };
 
+        let feeder_gateway_state = self.context.storage;
+
+        let feeder_gateway_routes = axum::Router::new()
+            .route("/get_block", get(get_block_handler))
+            .route("/get_state_update", get(get_state_update_handler))
+            .route("/get_signature", get(get_signature_handler))
+            .route("/get_public_key", get(get_public_key_handler))
+            .route("/get_class_by_hash", get(get_class_by_hash_handler))
+            .route("/get_contract_addresses", get(get_contract_addresses_handler));
+
         let router = axum::Router::new()
             // Also return success for get's with an empty body. These are often
             // used by monitoring bots to check service health.
@@ -192,7 +207,9 @@ impl RpcServer {
             .with_state(v08_routes.clone())
             .route("/rpc/pathfinder/v0.1", post(rpc_handler))
             .route("/rpc/pathfinder/v0_1", post(rpc_handler))
-            .with_state(pathfinder_routes.clone());
+            .with_state(pathfinder_routes.clone())
+            .nest("/feeder_gateway", feeder_gateway_routes)
+            .with_state(feeder_gateway_state);
 
         let router = if self.context.websocket.is_some() {
             router
@@ -257,11 +274,7 @@ pub mod test_utils {
     use pathfinder_common::macro_prelude::*;
     use pathfinder_common::prelude::*;
     use pathfinder_common::receipt::{
-        BuiltinCounters,
-        ExecutionResources,
-        ExecutionStatus,
-        L2ToL1Message,
-        Receipt,
+        BuiltinCounters, ExecutionResources, ExecutionStatus, L2ToL1Message, Receipt,
     };
     use pathfinder_common::transaction::*;
     use pathfinder_merkle_tree::{ClassCommitmentTree, StorageCommitmentTree};
